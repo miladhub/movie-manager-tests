@@ -25,8 +25,6 @@
         <module>movie-manager-ejb</module>
         <module>movie-manager-web</module>
         <module>movie-manager-ear</module>
-<!--        <module>movie-manager-it</module>
-        <module>movie-manager-dist</module> -->
     </modules>
 
     <properties>
