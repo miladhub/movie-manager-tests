@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.sample.base</groupId>
+		<artifactId>base</artifactId>
+		<version>1.4</version>
+	</parent>
+
+    <artifactId>base-incontainer</artifactId>
+    <name>Base In-Container Test Module</name>
+
+    <packaging>pom</packaging>
+	
+	<properties>
+    	<test.server.name>localhost</test.server.name>
+    	<test.server.port>8080</test.server.port>
+    	<test.server.naming.port>1099</test.server.naming.port>
+    	<test.server.home.dir>${env.JBOSS_HOME}</test.server.home.dir>
+    	<test.server.home.instance>default</test.server.home.instance>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.dbunit</groupId>
+                <artifactId>dbunit</artifactId>
+                <version>2.4.7</version>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.14</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.5.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.5.6</version>
+                <scope>provided</scope>
+            </dependency>
+		</dependencies>
+	</dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+		<pluginManagement>
+			<plugins>
+			    <!-- per la pulizia del container prima degli IT -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>2.3</version>
+                </plugin>
+                <!-- configura l'uso di JBoss -->
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <version>1.0.5</version>
+                    <configuration>
+                        <configuration>
+                            <home>${test.server.home.dir}/server/${test.server.home.instance}</home>
+                            <type>existing</type>
+                            <properties>
+                                <cargo.rmi.port>${test.server.naming.port}</cargo.rmi.port>
+                                <cargo.servlet.port>${test.server.port}</cargo.servlet.port>
+                                <cargo.jvmargs>-Xms512m -Xmx1024m -XX:MaxPermSize=256m
+                                -Dorg.sample.jdbc.connect=${org.sample.jdbc.connect}
+                                -Dorg.sample.jdbc.user=${org.sample.jdbc.user}
+                                -Dorg.sample.jdbc.pwd=${org.sample.jdbc.pwd}
+                                -Dorg.sample.jdbc.driver=${org.sample.jdbc.driver}
+                                -Dorg.sample.config=${org.sample.config}</cargo.jvmargs>
+                            </properties>
+                        </configuration>
+                        <container>
+                            <containerId>jboss6x</containerId>
+                            <home>${test.server.home.dir}</home>
+                            <timeout>120000</timeout>
+                        </container>
+                        <wait>false</wait>
+                    </configuration>
+                </plugin>
+                <!-- dichiara il driver MySQL per resettare il DB prima degli IT -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>sql-maven-plugin</artifactId>
+                    <version>1.3</version>
+                    <configuration>
+                        <driver>com.mysql.jdbc.Driver</driver>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>mysql</groupId>
+                            <artifactId>mysql-connector-java</artifactId>
+                            <version>5.1.13</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+			</plugins>
+		</pluginManagement>
+    </build>
+    
+	<profiles>
+	    <profile>
+	        <id>it</id>
+	        <build>
+                <plugins>
+                    <!--
+                     | [initialize] pulisce il container per evitare il deploy statico
+                     |              degli ear e war prima del deploy invocato da cargo
+                     |              questo è un SIDE EFFECT trascurabile (agisce soltanto
+                     |              quando viene buildato il root)
+                     |-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-up-container</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${test.server.home.dir}/server/${test.server.home.instance}/deploy</directory>
+                                            <includes>
+                                                <include>*.ear</include>
+                                                <include>*.war</include>
+                                            </includes>
+									        <excludes>
+										        <exclude>jmx-console.war</exclude>
+										        <exclude>ROOT.war</exclude>
+									        </excludes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!--
+                     | [pre-integration-test] avvia l'applicativo
+                     |
+                     | [post-integration-test] spegne l'applicativo
+                     -->
+                    <plugin>
+                        <groupId>org.codehaus.cargo</groupId>
+                        <artifactId>cargo-maven2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>start-container</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                    <goal>deploy</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-container</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+	        </build>
+	    </profile>
+	</profiles>
+    
+	<modules>
+	    <module>base-it</module>
+	    <module>base-ft</module>
+	</modules>
+
+</project>

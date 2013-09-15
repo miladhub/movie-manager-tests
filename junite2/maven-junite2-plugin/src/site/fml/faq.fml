@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<faqs id="FAQ" title="Frequently Asked Questions">
+  <part id="General">
+    <faq id="where-tests">
+      <question>Where should I put my tests?</question>
+      <answer>
+        <p>
+          In your <tt>src/main/java</tt> folder (<b>not</b> in <tt>src/test/java</tt>).
+        </p>
+      </answer>
+    </faq>
+    <faq id="data">
+	  <question>What about data?</question>
+      <answer>
+        <p>
+          You should handle dependencies towards data in your tables with
+		  <a hred="http://www.dbunit.org">dbunit (http://www.dbunit.org)</a>.
+        </p>
+      </answer>
+    </faq>
+    <faq id="classloader">
+	  <question>How do I load files from my tests?</question>
+      <answer>
+        <p>
+          Because your tests will execute within the JUnitEE servlet, you have
+		  to use the webapp <tt>ClassLoader</tt> - e.g. (this example retrieves an <tt>InputStream</tt>):
+		</p>
+		<p>
+		  <tt>getClass().getClassLoader().getResourceAsStream("dataset.xml")</tt>
+        </p>
+      </answer>
+    </faq>
+  </part>
+</faqs>
+

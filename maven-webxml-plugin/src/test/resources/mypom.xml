@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project>
+    <build>        
+        <plugins>
+            <plugin>
+                <groupId>com.i4c.plugins</groupId>
+                <artifactId>maven-webxml-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <configuration>
+                	<buildDir>target/mergedWebXml</buildDir>
+                	<sourceDir>target/test-classes</sourceDir>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

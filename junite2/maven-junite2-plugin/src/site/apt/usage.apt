@@ -1,0 +1,150 @@
+Usage
+
+    To use this plugin you have to:
+    
+        * Specify it in your <<<pom.xml>>>
+        
+        * Use <<<war>>> packaging and configure the <<<war>>> plugin properly
+        
+        * Trigger the remote test execution in the <<<integration-test>>> phase
+        
+        * Use Cargo (JBoss 4.x instructions)
+        
+    All of the snippets in this page are exactly equal to the overall configuration
+    depicted in the {{{examples/basic.html}basic example}}.
+    
+* Specify it in your <<<pom.xml>>>
+
+    You have to specify this plugin in your pom and activate the {{{decorate-mojo.html}decorate}}
+    goal execution - this will be automatically bound to the <<<test>>> phase (by design), because
+    it needs to run in the one immediately preceding the <<<package>>> phase (as of Maven 2.0.x,
+    that will be the <<<test>>> phase, while it will be <<<prepare-package>>> in Maven 2.1), so
+    note that we did not specify the <<<phase>>> element:
+	
++---------------------------------------+	
+<plugin>
+   <groupId>net.sf.junite2</groupId>
+   <artifactId>maven-junite2-plugin</artifactId>
+   <version>1.0.0-SNAPSHOT</version>
+   <executions>
+      <execution>
+         <id>junite2-war</id>
+         <goals>
+            <goal>decorate</goal>
+         </goals>
+      </execution>
+   </executions>
+</plugin>
++---------------------------------------+
+
+* Trigger the remote test execution in the <<<integration-test>>> phase
+
+    This is an example of how you can achieve this (again, the <<<junitee>>> goal has to
+    run in the <<<integration-test>>> phase, but we didn't specify it because this binding
+    is specified in the JUnitEE 2 Mojo design):
+	
++---------------------------------------+
+<plugin>
+   <groupId>net.sf.junite2</groupId> 
+   <artifactId>maven-junite2-plugin</artifactId> 
+   <version>1.0.0-SNAPSHOT</version>
+   <configuration> 
+      <url>http://${test.server.name}:${test.server.port}/${project.build.finalName}/TestServlet</url>
+      <runAll>true</runAll>
+   </configuration> 
+   <executions> 
+      <execution>
+         <id>junite2-junitee</id>
+         <goals> 
+            <goal>junitee</goal> 
+         </goals> 
+      </execution> 
+   </executions>
+</plugin>
++---------------------------------------+
+
+* Use <<<war>>> packaging and configure the <<<war>>> plugin properly
+
+    The configuration part consists in having to tell the <<<war>>> plugin where to take the <<<web.xml>>> file.
+    Of course, we're starting from a project that has <<no webapp part>>, so we're telling the <<<war>>> plugin
+    to use the <<<web.xml>>> that our plugin has generated <before> (this is the reason why the <<<util>>> plugin
+    has to be triggered before the <<<packaging>>> phase, to which the <<<war>>> plugin is bound).
+
+    Example:
+	
++---------------------------------------+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-war-plugin</artifactId>
+    <version>2.0</version>
+    <configuration>
+        <webXml>target/web.xml</webXml>
+    </configuration>
+</plugin>
++---------------------------------------+
+
+* Use Cargo (JBoss 4.x instructions)
+
+    Here we're configuring the {{{http://cargo.codehaus.org/}Cargo}} plugin in order to:
+
+        * start the container and deploy our WAR and our EAR to it in the <<<pre-integration-test>>> phase
+
+        * stop the container in the <<<post-integration-test>>> phase
+
+    This (and only this) part is specific to <<JBoss 4.x>>, meaning we're by following these instructions able
+    to run integration tests against such a server. This is an example snippet on how to achive this:
+
++---------------------------------------+
+<plugin>
+   <groupId>org.codehaus.cargo</groupId>
+   <artifactId>cargo-maven2-plugin</artifactId>
+   <configuration>
+      <configuration>
+         <home>${test.server.home.dir}/server/${test.server.home.instance}</home>
+         <type>existing</type>
+         <properties>
+            <cargo.rmi.port>1099</cargo.rmi.port>
+         </properties>
+      </configuration>
+      <container>
+         <containerId>jboss4x</containerId>
+         <home>${test.server.home.dir}</home>
+         <timeout>120000</timeout>
+      </container>
+      <deployer>
+         <deployables>
+            <deployable>
+               <groupId>org.sample.my-project</groupId>
+               <artifactId>my-project-ear</artifactId>
+               <type>ear</type>
+               <pingURL>http://${test.server.name}:${test.server.port}/my-project-web</pingURL>
+            </deployable>
+            <deployable>
+               <groupId>org.sample.it</groupId>
+               <artifactId>it-test</artifactId>
+               <type>war</type>
+               <pingURL>http://${test.server.name}:${test.server.port}/${project.build.finalName}/</pingURL>
+            </deployable>
+         </deployables>
+      </deployer>
+      <wait>false</wait>
+   </configuration>
+   <executions>
+      <execution>
+         <id>start-container</id>
+         <phase>pre-integration-test</phase>
+         <goals>
+            <goal>start</goal>
+            <goal>deploy</goal>
+         </goals>
+      </execution>
+      <execution>
+         <id>stop-container</id>
+         <phase>post-integration-test</phase>
+         <goals>
+            <goal>stop</goal>
+         </goals>
+      </execution>
+   </executions>
+</plugin>
++---------------------------------------+

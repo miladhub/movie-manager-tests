@@ -1,0 +1,153 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.sf.junite2</groupId>
+	<artifactId>juniteepom</artifactId>
+	<version>1.0.0-w</version><!-- tweaked version not to collide with official one -->
+	<packaging>pom</packaging>
+	<name>JunitEE V2 Pom</name>
+	<url>https://sourceforge.net/projects/junite2</url>
+	<description>This is the master build for the JUnitE2 - junit 4 and
+		maven enabled version of JUnitEE</description>
+	<licenses>
+		<license>
+			<name>GNU General Public License (GPL), Public Domain</name>
+			<url>http://www.gnu.org/copyleft/gpl.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>https://sourceforge.net/svn/?group_id=230783</url>
+	</scm>
+	<developers>
+		<developer>
+			<id>martinfr62</id>
+			<name>Martin Franklin</name>
+			<email>martinfr62@sourceforge.net</email>
+			<url/>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>ziesemer</id>
+			<name>Mark A. Ziesemer</name>
+			<email>ziesemer@users.sourceforge.net</email>
+			<url>http://www.ziesemer.com</url>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<ciManagement>
+		<system>hudson</system>
+		<url>http://localhost:7070/job/JunitE2%20Nightly/</url>
+		<notifiers>
+			<notifier>
+				<type>mail</type>
+				<configuration>
+					<recipients>martinfr62@sourceforge.net</recipients>
+				</configuration>
+				<sendOnError>true</sendOnError>
+				<sendOnFailure>true</sendOnFailure>
+				<sendOnSuccess>true</sendOnSuccess>
+				<sendOnWarning>true</sendOnWarning>
+			</notifier>
+		</notifiers>
+	</ciManagement>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.atlassian.maven.plugins</groupId>
+				<artifactId>maven-clover2-plugin</artifactId>
+				<configuration>
+					<license> ponRRaCdXMubkJxVEpEXjKwqoqMNuewPToshpSLOrEVtXmH
+				mj2L06kEmEvQZ&lt;pyIrV71BdVC2KN0nfavqfxhYm>q2ZmB8Q
+						QRORtTQnPrRMnMqqmnpvXRqNmRNpnnpQNQWSSutVuWVxvmN
+						ROrnmqmUUnonssnsqmmmmmUUnonssnsqmmmmmUUALkfq55U
+Unmmmm
+				                </license>
+					<generateHistorical>true</generateHistorical>
+					<historyDir>${basedir}/clover/history</historyDir>
+					<generateHtml>true</generateHtml>
+					<generateXml>true</generateXml>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>instrument</goal>
+							<goal>aggregate</goal>
+							<goal>save-history</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>surefire-report-maven-plugin</artifactId>
+				<version>2.0-beta-1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jxr-maven-plugin</artifactId>
+				<version>2.0-beta-1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jdepend-maven-plugin</artifactId>
+				<version>2.0-beta-1</version>
+			</plugin>
+			<plugin>
+				<groupId>com.atlassian.maven.plugins</groupId>
+				<artifactId>maven-clover2-plugin</artifactId>
+				<configuration>
+					<generateHistorical>true</generateHistorical>
+					<historyDir>${basedir}/clover/history</historyDir>
+					<generateHtml>true</generateHtml>
+					<generateXml>true</generateXml>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+	<distributionManagement>
+		<!--<repository>
+			<id>ssh-repository</id>
+			<name>Junitee Sourceforge Repo</name>
+			<url>scp://shell.sourceforge.net/home/groups/j/ju/junite2/htdocs/repo/</url>
+		</repository>
+		<snapshotRepository>
+			<id>ssh-repository</id>
+			<name>Junitee Sourceforge Repo</name>
+			<url>scp://shell.sourceforge.net/home/groups/j/ju/junite2/htdocs/snapshot_repo/</url>
+		</snapshotRepository>
+		<site>
+			<id>ssh-repository</id>
+			<url>scp://shell.sourceforge.net/home/groups/j/ju/junite2/htdocs</url>
+		</site>-->
+		<repository>
+			<id>local-repository</id>
+			<name>Local Repository</name>
+			<url>dav:http://server/repo/</url>
+		</repository>
+	</distributionManagement>
+	<modules>
+		<module>JUnitE2Servlet</module>
+		<module>maven-junite2-plugin</module>
+	</modules>
+</project>

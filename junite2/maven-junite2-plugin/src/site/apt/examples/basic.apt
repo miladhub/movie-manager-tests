@@ -1,0 +1,147 @@
+Usage examples
+
+* Basic usage example (with JBoss 4.x)
+
+    Here is a basic configuration example:
+
++----------------------------------+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.sample.it</groupId>
+    <artifactId>it-test</artifactId>
+    <packaging>war</packaging>
+    <name>IT Test</name>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <test.server.name>localhost</test.server.name>
+        <test.server.port>8080</test.server.port>
+        <test.server.home.dir>${env.JBOSS_HOME}</test.server.home.dir>
+        <test.server.home.instance>default</test.server.home.instance>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.sf.junite2</groupId>
+                <artifactId>maven-junite2-plugin</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>junite2-war</id>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.0</version>
+                <configuration>
+                    <webXml>target/web.xml</webXml>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <configuration>
+                    <configuration>
+                        <home>${test.server.home.dir}/server/${test.server.home.instance}</home>
+                        <type>existing</type>
+                        <properties>
+                            <cargo.rmi.port>1099</cargo.rmi.port>
+                        </properties>
+                    </configuration>
+                    <container>
+                        <containerId>jboss4x</containerId>
+                        <home>${test.server.home.dir}</home>
+                        <timeout>120000</timeout>
+                    </container>
+                    <deployer>
+                        <deployables>
+                            <deployable>
+                                <groupId>org.sample.my-project</groupId>
+                                <artifactId>my-project-ear</artifactId>
+                                <type>ear</type>
+                                <pingURL>http://${test.server.name}:${test.server.port}/my-project-web</pingURL>
+                            </deployable>
+                            <deployable>
+                                <groupId>org.sample.it</groupId>
+                                <artifactId>it-test</artifactId>
+                                <type>war</type>
+                                <pingURL>http://${test.server.name}:${test.server.port}/${project.build.finalName}/</pingURL>
+                            </deployable>
+                        </deployables>
+                    </deployer>
+                    <wait>false</wait>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start-container</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-container</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.sf.junite2</groupId> 
+                <artifactId>maven-junite2-plugin</artifactId> 
+                <version>1.0.0-SNAPSHOT</version>
+                <configuration> 
+                <url>http://${test.server.name}:${test.server.port}/${project.build.finalName}/TestServlet</url>
+                <runAll>true</runAll>
+                </configuration> 
+                <executions> 
+                    <execution>
+                        <id>junite2-junitee</id>
+                        <goals> 
+                            <goal>junitee</goal> 
+                        </goals> 
+                    </execution> 
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.junite2</groupId>
+            <artifactId>junite2</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
++----------------------------------+

@@ -1,0 +1,47 @@
+Maven 2 Utility Plugin
+
+	This is the Maven 2 JUnitEE plugin.
+    
+    This plugin provides the Maven 2 implementation of the JUnitEE <<<junitee>>> and <<<juniteewar>>> Ant
+    tasks (see {{{http://www.junitee.org}JUnitEE site}}).
+
+	The aim of the JUnitEE project (and its {{{http://sourceforge.net/projects/junitee/}Maven 2 evolution}} is,
+	in two words: <<integration testing>> (see the above site for more information); unlike unit tests (executed
+	by Maven in the <<<test>>> project lifecycle phase), integration tests (by definition) have to be actually
+	run <inside> the container, because you have to test your application in a way that is as close as possible
+	to the one which is actually going to be layed out in production (if you have to test an EJB session bean, you
+	could either test it from outside or inside the container; but if you choose the former, you're not behaving like
+	other EJBs trying to call the tested session bean).
+	
+	So, because we want to test from inside the container, we have to have a component inside it which we will call
+	and which will execute the tests on our behalf. In the case of JUnitEE, this component is a WAR application,
+	deployed alongside the tested EAR application.
+	
+	To achieve so, what JUnitee <<<juniteewar>>> task does is wrapping the test-cases included in the task configuration
+	in a WAR file containing the, along with:
+	
+		* A <<<web.xml>>> file, configuring the JUnitEE servlet which will accept remote test execution requests
+		
+		* An <<<index.html>>> welcome file, suitable for interacting fashion of executing the tests (the context root of the
+		test servlet is always, not surprisingly, <<<TestServlet>>>)
+		
+		* A <<<testCases.txt>>> file, located in the <<<WEB-INF/>>>, enumerating all test-case class names, in order to
+		facilitate the test execution, for which a Maven 2 plugin is provided by by the JUnitE2 project (see {{{usage.html}here}}
+		for an overall configuration)
+	
+* Goals Overview
+
+	General Information about the goals.
+
+		* {{{war-mojo.html}junite2:war}} plugin for JUnitEE war building.
+        * {{{junitee-mojo.html}junite2:junite}} plugin for JUnitEE tests invocation.
+
+* Usage
+
+	Usage instructions can be found {{{usage.html}here}}.
+
+* Examples
+
+	Here are some usage examples:
+	
+		* {{{examples/basic.html}basic usage (JBoss 4.x)}}

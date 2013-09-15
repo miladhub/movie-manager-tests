@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.sample.base</groupId>
+		<artifactId>base-incontainer</artifactId>
+		<version>1.4</version>
+	</parent>
+	
+    <artifactId>base-it</artifactId>
+	
+    <name>Base Integration Test Module</name>
+
+    <packaging>pom</packaging>
+	
+    <dependencyManagement>
+        <dependencies>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.3.1</version>
+			</dependency>
+            <dependency>
+                <groupId>net.sf.junite2</groupId>
+                <artifactId>junite2</artifactId>
+                <version>1.0.0-w</version>
+            </dependency>
+		</dependencies>
+	</dependencyManagement>
+
+    <dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.junite2</groupId>
+			<artifactId>junite2</artifactId>
+		</dependency>
+    </dependencies>
+
+    <build>
+		<resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.xls</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+
+		<pluginManagement>
+			<plugins>
+                <!-- usa il web.xml creato dal goal 'war' di junite2 -->
+                <plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+                    <configuration>
+                        <webXml>target/web.xml</webXml>
+                    </configuration>
+				</plugin>
+                <!-- plugin per (creare i file necessari a) creare il war di IT e per invocare i test remoti -->
+				<plugin>
+					<groupId>net.sf.junite2</groupId>
+					<artifactId>maven-junite2-plugin</artifactId>
+					<version>1.0.0-w</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+            <!--
+             | [test] crea i file necessari per costruire il war degli IT (e.g. target/web.xml)
+             |        questo è un SIDE EFFECT inoffensivo (agisce soltanto quando viene buildato
+             |        il root; inoltre, su questo modulo non esiste la cartella dei sorgenti,
+             |        quindi non viene creato nulla)
+            -->
+			<plugin>
+				<groupId>net.sf.junite2</groupId>
+				<artifactId>maven-junite2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>junitee-war</id>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                    </execution>
+                </executions>
+			</plugin>
+		</plugins>
+    </build>
+    
+	<profiles>
+	    <profile>
+	        <id>it</id>
+	        <build>
+	            <plugins>
+                    <!-- [integration-test] configura l'invocazione dei test -->
+                    <plugin>
+                        <groupId>net.sf.junite2</groupId>
+                        <artifactId>maven-junite2-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>junitee-runtest</id>
+                                <configuration>
+                                    <url>http://${test.server.name}:${test.server.port}/${project.build.finalName}/TestServlet</url>
+                                    <runAll>true</runAll>
+                                </configuration>
+                                <goals>
+                                    <goal>junitee</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+	            </plugins>
+	        </build>
+	    </profile>
+	</profiles>
+
+</project>
